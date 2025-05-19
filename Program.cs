@@ -3,49 +3,47 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Get environment variable for database URL (Render sets this)
-var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-
-// Use DATABASE_URL if running on Render, otherwise use local config
-var connectionString = !string.IsNullOrEmpty(databaseUrl)
-    ? ConvertDatabaseUrlToConnectionString(databaseUrl)
-    : builder.Configuration.GetConnectionString("DefaultConnection");
+// Get PORT from environment (Render sets it dynamically)
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // Add DbContext with PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add controller services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Define a named CORS policy
+var corsPolicy = "AllowAll";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: corsPolicy, policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
-// Enable CORS
-app.UseCors(x => x.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+// Apply CORS policy
+app.UseCors(corsPolicy);
 
-// Enable Swagger only in Development
+// Enable Swagger only in development
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// Use Authorization
 app.UseAuthorization();
 
+// Map controllers
 app.MapControllers();
 
-// 🔽 Listen on 0.0.0.0 and the PORT specified by Render
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-app.Urls.Add($"http://0.0.0.0:{port}");
-
 app.Run();
-
-// Utility method to convert Render's DATABASE_URL to Npgsql format
-string ConvertDatabaseUrlToConnectionString(string databaseUrl)
-{
-    var uri = new Uri(databaseUrl);
-    var userInfo = uri.UserInfo.Split(':');
-    return $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
-}
