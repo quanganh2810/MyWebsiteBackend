@@ -126,3 +126,4 @@ C:\Users\ADMIN\Desktop\React Project\backend\WebApplication1\FoodApi\obj\Debug\n
 C:\Users\ADMIN\Desktop\React Project\backend\WebApplication1\FoodApi\obj\Debug\net9.0\FoodApi.pdb
 C:\Users\ADMIN\Desktop\React Project\backend\WebApplication1\FoodApi\obj\Debug\net9.0\FoodApi.genruntimeconfig.cache
 C:\Users\ADMIN\Desktop\React Project\backend\WebApplication1\FoodApi\obj\Debug\net9.0\ref\FoodApi.dll
+C:\Users\ADMIN\Desktop\React Project\backend\WebApplication1\FoodApi\obj\Debug\net9.0\FoodApi.sourcelink.json
